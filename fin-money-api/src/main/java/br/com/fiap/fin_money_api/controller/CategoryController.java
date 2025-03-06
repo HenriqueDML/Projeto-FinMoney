@@ -59,7 +59,17 @@ public class CategoryController {
     //editar
     //PUT sempre mais viável(json), mas podemos usar o PATCH
     @PutMapping ("/categories/{id}")
-    public void update(@PathVariable Long id, @RequestBody Category category){
+    public ResponseEntity<Category> update(@PathVariable Long id, @RequestBody Category category){
         System.out.println("Atualizando categoria" + id + " " + category);
+        var categoryToUpdate = repository.stream()
+                .filter(c -> c.getId().equals(id))
+                .findFirst();
+
+        if (categoryToUpdate.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        repository.remove(categoryToUpdate.get());
+        repository.add(category);
+        return ResponseEntity.ok(category);
     }
 }
