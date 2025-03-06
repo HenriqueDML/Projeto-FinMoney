@@ -5,12 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import br.com.fiap.fin_money_api.model.Category;
 
@@ -46,4 +41,25 @@ public class CategoryController {
         return ResponseEntity.ok(category.get());
     }
 
+    //apagar
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<Object> destroy(@PathVariable Long id){
+        System.out.println("Apagando categoria" + id);
+        var category = repository.stream()
+                .filter(c -> c.getId().equals(id))
+                .findFirst();
+
+        if (category.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        repository.remove(category.get());
+        return ResponseEntity.noContent().build();//para endpoints do tipo delete 204
+    }
+
+    //editar
+    //PUT sempre mais viável(json), mas podemos usar o PATCH
+    @PutMapping ("/categories/{id}")
+    public void update(@PathVariable Long id, @RequestBody Category category){
+        System.out.println("Atualizando categoria" + id + " " + category);
+    }
 }
