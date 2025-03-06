@@ -1,4 +1,6 @@
-package br.com.fiap.fin_money_api.controller.model;
+package br.com.fiap.fin_money_api.model;
+
+import java.util.Random;
 
 public class Category {
     private Long id;
@@ -6,9 +8,9 @@ public class Category {
     private String icon;
 
     public Category(Long id, String name, String icon) {
-        this.icon = icon;
+        this.id = Math.abs(new Random().nextLong());
         this.name = name;
-        this.id = id;
+        this.icon = icon;
     }
 
     public Long getId() {
@@ -22,4 +24,5 @@ public class Category {
     public String getIcon() {
         return icon;
     }
+
 }
