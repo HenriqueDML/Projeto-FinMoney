@@ -1,66 +1,70 @@
 package br.com.fiap.fin_money_api.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import br.com.fiap.fin_money_api.model.Category;
+import br.com.fiap.fin_money_api.repository.CategoryRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import br.com.fiap.fin_money_api.model.Category;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
+
 @RestController
+@RequestMapping("/categories")
 public class CategoryController {
 
-    private List<Category> repository = new ArrayList<>();
+    private Logger log = LoggerFactory.getLogger(getClass());
+    @Autowired // Injeção de dependência
+    private CategoryRepository repository;
 
-    @GetMapping("/categories")
+    //Toda anotação possui um atributo padrão, neste caso, quando for passar apenas o atributo padrão, não é necessario identificar o atributo
+    @GetMapping
+    // Quando devolvemos um objeto, automaticamente ele irá retornar um JSON
     public List<Category> index() {
-        return repository;
+        return repository.findAll();
     }
 
-    @PostMapping("/categories")
+    @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
     public Category create(@RequestBody Category category) {
-        System.out.println("Cadastrando categoria " + category.getName());
-        repository.add(category);
+        log.info("Nome da categoria: " + category.getName());
+        repository.save(category);
         return category;
     }
 
-    @GetMapping("/categories/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Category> get(@PathVariable Long id) {
-        System.out.println("Buscando categoria " + id);
+        // 1L -> o L representa um Long
+        log.info("buscando categoria: " + id);
         return ResponseEntity.ok(getCategory(id));
     }
 
-    //apagar
-    @DeleteMapping("/categories/{id}")
-    public ResponseEntity<Object> destroy(@PathVariable Long id){
-        System.out.println("Apagando categoria" + id);
-        var category = getCategory(id);
-        repository.remove(getCategory(id));
-        return ResponseEntity.noContent().build();//para endpoints do tipo delete 204
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> destroy(@PathVariable Long id) {
+        log.info("Apagando categoria: " + id);
+        repository.delete(getCategory(id));
+        return ResponseEntity.noContent().build();
     }
 
-    //editar
-    //PUT sempre mais viável(json), mas podemos usar o PATCH
-    @PutMapping ("/categories/{id}")
-    public ResponseEntity<Category> update(@PathVariable Long id, @RequestBody Category category){
-        System.out.println("Atualizando categoria" + id + " " + category);
-        repository.remove(getCategory(id));
+    @PutMapping("/{id}")
+    public ResponseEntity<Category> update(@PathVariable Long id, @RequestBody Category category) {
+        log.info("Atualizando categoria: " + id + " " + category.getName());
+        getCategory(id);
         category.setId(id);
-        repository.add(category);
+        repository.save(category);
+
         return ResponseEntity.ok(category);
     }
 
     private Category getCategory(Long id) {
-        return repository.stream()
-                .filter(c -> c.getId().equals(id))
-                .findFirst()
-                .orElseThrow(
-                        ()-> new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "Categoria não encontrada"));
+        return repository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Categoria não encontrada"
+                )
+        );
     }
 }
